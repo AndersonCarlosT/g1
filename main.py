@@ -11,31 +11,25 @@ if archivo:
     # Leer la hoja "G-01 CENTRALES"
     df_excel = pd.read_excel(archivo, sheet_name="G-01 CENTRALES", header=None)
 
-    # Definir los rangos a extraer (pandas indexa desde 0)
-    nombre_central = df_excel.loc[14:25, 2]   # C15:C26
-    tipo_generador = df_excel.loc[14:25, 4]   # E15:E26
-    numero_generador = df_excel.loc[14:25, 5] # F15:F26
-    hp_mwh = df_excel.loc[14:25, 9]           # J15:J26
-    hfp_mwh = df_excel.loc[14:25, 10]         # K15:K26
-    total_mwh = df_excel.loc[14:25, 11]       # L15:L26
-    maxima_demanda = df_excel.loc[14:25, 14]  # O15:O26
+    # Definir los rangos a extraer
+    nombre_central = df_excel.loc[14:25, 2]   # C15:C26 -> Columna 2
+    tipo_generador = df_excel.loc[14:25, 4]   # E15:E26 -> Columna 4
+    numero_generador = df_excel.loc[14:25, 5] # F15:F26 -> Columna 5
+    hp_mwh = df_excel.loc[14:25, 9]           # J15:J26 -> Columna 9
+    hfp_mwh = df_excel.loc[14:25, 10]         # K15:K26 -> Columna 10
+    total_mwh = df_excel.loc[14:25, 11]       # L15:L26 -> Columna 11
+    maxima_demanda = df_excel.loc[14:25, 14]  # O15:O26 -> Columna 14
 
-    # Crear el dataframe
+    # Construir el dataframe final
     df_resultado = pd.DataFrame({
-        "Nombre de la Central": nombre_central.values,
-        "Tipo de Generador": tipo_generador.values,
-        "Numero de Generador": numero_generador.values,
-        "HP (MWh)": hp_mwh.values,
-        "HFP (MWh)": hfp_mwh.values,
-        "Total (MWh)": total_mwh.values,
-        "Máxima Demanda (MW)": maxima_demanda.values
+        "Nombre de la Central": nombre_central,
+        "Tipo de Generador": tipo_generador,
+        "Numero de Generador": numero_generador,
+        "HP (MWh)": hp_mwh,
+        "HFP (MWh)": hfp_mwh,
+        "Total (MWh)": total_mwh,
+        "Máxima Demanda (MW)": maxima_demanda
     })
 
-    # Rellenar ceros desde la fila 4 (índice 3), celda por celda
-    for fila in range(3, len(df_resultado)):
-        for columna in df_resultado.columns:
-            if pd.isna(df_resultado.at[fila, columna]):
-                df_resultado.at[fila, columna] = 0
-
-    # Mostrar el dataframe
+    # Mostrar el dataframe sin reemplazar celdas vacías
     st.dataframe(df_resultado, use_container_width=True)
