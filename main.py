@@ -73,7 +73,7 @@ if archivo:
     df_final = pd.concat([df_resultado, df_adicional], ignore_index=True)
 
     # Eliminar filas 3, 6, 9 y 12 (indexando desde 0)
-    filas_a_eliminar = [2, 5, 8 11]
+    filas_a_eliminar = [2, 5, 8, 11]
     df_final = df_final.drop(filas_a_eliminar).reset_index(drop=True)
 
     # Rellenar todas las celdas vacías con 0
