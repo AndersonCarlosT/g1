@@ -8,18 +8,24 @@ st.title("📥 Extracción de Datos del Excel G1")
 archivo_excel = st.file_uploader("Agrega el Excel G1", type=["xlsx"])
 
 if archivo_excel:
-    df_excel = pd.read_excel(archivo_excel, sheet_name=0, header=None)
+    xls = pd.ExcelFile(archivo_excel)
 
-    # Definimos las posiciones necesarias de columna y fila
+    # Mostrar todas las hojas y la hoja que se va a usar
+    hojas = xls.sheet_names
+    hoja_usada = hojas[0]  # primera hoja
+    st.info(f"📄 Usando automáticamente la hoja: **{hoja_usada}**")
+
+    # Leer la primera hoja
+    df_excel = pd.read_excel(archivo_excel, sheet_name=hoja_usada, header=None)
+
     columnas_necesarias = [2, 4, 5, 9, 10, 11, 14]  # C, E, F, J, K, L, O
 
-    # Verificar sólo que las columnas existan (no el contenido)
     if max(columnas_necesarias) >= df_excel.shape[1]:
-        st.error(f"❌ El archivo tiene solo {df_excel.shape[1]} columnas. Se necesitan al menos {max(columnas_necesarias)+1} columnas (hasta la O).")
+        st.error(f"❌ La hoja seleccionada tiene solo {df_excel.shape[1]} columnas. Se necesitan al menos {max(columnas_necesarias)+1} columnas (hasta la O).")
     elif df_excel.shape[0] < 26:
-        st.error(f"❌ El archivo tiene solo {df_excel.shape[0]} filas. Se necesitan al menos 26 filas.")
+        st.error(f"❌ La hoja seleccionada tiene solo {df_excel.shape[0]} filas. Se necesitan al menos 26 filas.")
     else:
-        # Extracción segura (las celdas pueden estar vacías, no pasa nada)
+        # Extraer datos
         nombre_central = df_excel.iloc[14:26, 2].reset_index(drop=True)
         tipo_generador = df_excel.iloc[14:26, 4].reset_index(drop=True)
         numero_generador = df_excel.iloc[14:26, 5].reset_index(drop=True)
