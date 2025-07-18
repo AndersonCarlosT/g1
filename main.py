@@ -1,3 +1,5 @@
+# archivo: g1_extractor_app.py
+
 import streamlit as st
 import pandas as pd
 import io
@@ -45,3 +47,5 @@ if archivo_excel:
         label="📥 Descargar Excel de Resultados",
         data=output,
         file_name="Extraccion_G1.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
