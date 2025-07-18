@@ -12,27 +12,14 @@ if archivo_excel:
 
     # Definimos las posiciones necesarias de columna y fila
     columnas_necesarias = [2, 4, 5, 9, 10, 11, 14]  # C, E, F, J, K, L, O
-    filas_necesarias = list(range(14, 26))  # Fila 15 a 26 en Excel
 
-    # Función para verificar si existe una celda
-    def celda_existe(fila, columna):
-        try:
-            _ = df_excel.iloc[fila, columna]
-            return True
-        except IndexError:
-            return False
-
-    # Verificar filas y columnas una por una
-    faltantes = []
-    for col in columnas_necesarias:
-        for fila in filas_necesarias:
-            if not celda_existe(fila, col):
-                faltantes.append(f"Fila {fila+1}, Columna {col+1}")
-
-    if faltantes:
-        st.error(f"❌ El archivo parece tener celdas faltantes en estas posiciones: {faltantes}")
+    # Verificar sólo que las columnas existan (no el contenido)
+    if max(columnas_necesarias) >= df_excel.shape[1]:
+        st.error(f"❌ El archivo tiene solo {df_excel.shape[1]} columnas. Se necesitan al menos {max(columnas_necesarias)+1} columnas (hasta la O).")
+    elif df_excel.shape[0] < 26:
+        st.error(f"❌ El archivo tiene solo {df_excel.shape[0]} filas. Se necesitan al menos 26 filas.")
     else:
-        # Extracción segura
+        # Extracción segura (las celdas pueden estar vacías, no pasa nada)
         nombre_central = df_excel.iloc[14:26, 2].reset_index(drop=True)
         tipo_generador = df_excel.iloc[14:26, 4].reset_index(drop=True)
         numero_generador = df_excel.iloc[14:26, 5].reset_index(drop=True)
