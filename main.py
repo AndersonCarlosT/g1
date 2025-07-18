@@ -10,13 +10,27 @@ archivo_excel = st.file_uploader("Agrega el Excel G1", type=["xlsx"])
 if archivo_excel:
     df_excel = pd.read_excel(archivo_excel, sheet_name=0, header=None)
 
-    # Verificación de columnas mínimas
+    # Definimos las posiciones necesarias de columna y fila
     columnas_necesarias = [2, 4, 5, 9, 10, 11, 14]  # C, E, F, J, K, L, O
+    filas_necesarias = list(range(14, 26))  # Fila 15 a 26 en Excel
 
-    if max(columnas_necesarias) >= df_excel.shape[1]:
-        st.error(f"❌ El archivo no tiene suficientes columnas. Se necesitan al menos {max(columnas_necesarias)+1} columnas (hasta la O).")
-    elif df_excel.shape[0] < 26:
-        st.error("❌ El archivo no tiene suficientes filas. Se necesitan al menos 26 filas.")
+    # Función para verificar si existe una celda
+    def celda_existe(fila, columna):
+        try:
+            _ = df_excel.iloc[fila, columna]
+            return True
+        except IndexError:
+            return False
+
+    # Verificar filas y columnas una por una
+    faltantes = []
+    for col in columnas_necesarias:
+        for fila in filas_necesarias:
+            if not celda_existe(fila, col):
+                faltantes.append(f"Fila {fila+1}, Columna {col+1}")
+
+    if faltantes:
+        st.error(f"❌ El archivo parece tener celdas faltantes en estas posiciones: {faltantes}")
     else:
         # Extracción segura
         nombre_central = df_excel.iloc[14:26, 2].reset_index(drop=True)
