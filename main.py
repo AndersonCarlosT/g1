@@ -11,7 +11,7 @@ if archivo:
     # Leer la hoja "G-01 CENTRALES"
     df_excel = pd.read_excel(archivo, sheet_name="G-01 CENTRALES", header=None)
 
-    # Primer bloque de datos (C15:C26, E15:F26, J15:L26, O15:O26)
+    # Datos originales C15:C26, E15:F26, J15:L26, O15:O26
     nombre_central = df_excel.loc[14:25, 2]
     tipo_generador = df_excel.loc[14:25, 4]
     numero_generador = df_excel.loc[14:25, 5]
@@ -20,7 +20,8 @@ if archivo:
     total_mwh = df_excel.loc[14:25, 11]
     maxima_demanda = df_excel.loc[14:25, 14]
 
-    df_original = pd.DataFrame({
+    # Crear el dataframe inicial
+    df_resultado = pd.DataFrame({
         "Nombre de la Central": nombre_central,
         "Tipo de Generador": tipo_generador,
         "Numero de Generador": numero_generador,
@@ -30,44 +31,46 @@ if archivo:
         "Máxima Demanda (MW)": maxima_demanda
     })
 
-    # Segundo bloque de datos (datos adicionales)
-    nuevas_centrales = ["MODASA MP-515", "CUMMINS ZQ-4288", "COMMINS C900", "COMMINS 925kw"]
-    nuevos_generadores = ["G0016", "G01044", "G0653", "G0047", "G0064"]
+    # Datos adicionales a agregar
 
-    # Datos de J49:L49, J54:L54, J59:L59, J64:L64
-    filas_extra = [48, 53, 58, 63]  # Rango en pandas (indexado desde 0)
+    # Columna 1: "Central Termica"
+    nuevas_centrales = ["Central Termica"] * 4
 
-    hp_mwh_extra = df_excel.loc[filas_extra, 9]
-    hfp_mwh_extra = df_excel.loc[filas_extra, 10]
-    total_mwh_extra = df_excel.loc[filas_extra, 11]
-    maxima_demanda_extra = df_excel.loc[filas_extra, 14]
+    # Columna 2: nombres de los generadores
+    nuevos_generadores = ["MODASA MP-515", "CUMMINS ZQ-4288", "COMMINS C900", "COMMINS 925kw"]
+
+    # Columna 3: números de generador
+    nuevos_codigos = ["G0016", "G01044", "G0653", "G0047"]
+
+    # Columnas 4-6: J49:L49, J54:L54, J59:L59, J64:L64
+    nuevas_hp = [
+        df_excel.loc[48, 9], df_excel.loc[53, 9], df_excel.loc[58, 9], df_excel.loc[63, 9]
+    ]
+    nuevas_hfp = [
+        df_excel.loc[48, 10], df_excel.loc[53, 10], df_excel.loc[58, 10], df_excel.loc[63, 10]
+    ]
+    nuevas_total = [
+        df_excel.loc[48, 11], df_excel.loc[53, 11], df_excel.loc[58, 11], df_excel.loc[63, 11]
+    ]
+
+    # Columna 7: O49, O54, O59, O64
+    nuevas_maxima_demanda = [
+        df_excel.loc[48, 14], df_excel.loc[53, 14], df_excel.loc[58, 14], df_excel.loc[63, 14]
+    ]
 
     # Crear dataframe adicional
-    df_extra = pd.DataFrame({
+    df_adicional = pd.DataFrame({
         "Nombre de la Central": nuevas_centrales,
-        "Tipo de Generador": [None]*4,  # Se deja en blanco
-        "Numero de Generador": nuevos_generadores[:4],
-        "HP (MWh)": hp_mwh_extra.values,
-        "HFP (MWh)": hfp_mwh_extra.values,
-        "Total (MWh)": total_mwh_extra.values,
-        "Máxima Demanda (MW)": maxima_demanda_extra.values
+        "Tipo de Generador": nuevos_generadores,
+        "Numero de Generador": nuevos_codigos,
+        "HP (MWh)": nuevas_hp,
+        "HFP (MWh)": nuevas_hfp,
+        "Total (MWh)": nuevas_total,
+        "Máxima Demanda (MW)": nuevas_maxima_demanda
     })
 
-    # Agregar G0064 adicional si quieres una fila extra (opcional)
-    if len(nuevos_generadores) > 4:
-        fila_adicional = pd.DataFrame({
-            "Nombre de la Central": [None],
-            "Tipo de Generador": [None],
-            "Numero de Generador": [nuevos_generadores[4]],
-            "HP (MWh)": [None],
-            "HFP (MWh)": [None],
-            "Total (MWh)": [None],
-            "Máxima Demanda (MW)": [None]
-        })
-        df_extra = pd.concat([df_extra, fila_adicional], ignore_index=True)
-
-    # Concatenar los dataframes (verticalmente)
-    df_final = pd.concat([df_original, df_extra], ignore_index=True)
+    # Concatenar ambos dataframes
+    df_final = pd.concat([df_resultado, df_adicional], ignore_index=True)
 
     # Mostrar el dataframe
     st.dataframe(df_final, use_container_width=True)
