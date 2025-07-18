@@ -72,5 +72,9 @@ if archivo:
     # Concatenar ambos dataframes
     df_final = pd.concat([df_resultado, df_adicional], ignore_index=True)
 
-    # Mostrar el dataframe
+    # Eliminar filas 3, 6, 9 y 12 (indexando desde 0)
+    filas_a_eliminar = [3, 6, 9, 12]
+    df_final = df_final.drop(filas_a_eliminar).reset_index(drop=True)
+
+    # Mostrar el dataframe final
     st.dataframe(df_final, use_container_width=True)
