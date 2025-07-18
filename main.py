@@ -1,60 +1,42 @@
 import streamlit as st
 import pandas as pd
-import io
 
-st.set_page_config(page_title="📊 Extractor de Datos G1", layout="wide")
-st.title("📥 Extracción de Datos del Excel G1")
+def main():
+    st.title("Extracción de datos Excel – G‑01 CENTRALES")
+    st.write("Sube tu archivo Excel correspondiente a *G1*")
 
-archivo_excel = st.file_uploader("Agrega el Excel G1", type=["xlsx"])
+    # Input para cargar el archivo
+    uploaded_file = st.file_uploader("Agrega el Excel G1", type=["xls", "xlsx"])
+    if not uploaded_file:
+        st.info("Por favor, sube un archivo Excel.")
+        return
 
-if archivo_excel:
-    xls = pd.ExcelFile(archivo_excel)
+    # Lee la hoja
+    try:
+        df_excel = pd.read_excel(uploaded_file, sheet_name="G-01 CENTRALES", header=None)
+    except Exception as e:
+        st.error(f"No se pudo leer la hoja 'G-01 CENTRALES': {e}")
+        return
 
-    # Mostrar todas las hojas y la hoja que se va a usar
-    hojas = xls.sheet_names
-    hoja_usada = hojas[0]  # primera hoja
-    st.info(f"📄 Usando automáticamente la hoja: **{hoja_usada}**")
+    # Define rangos (base 0)
+    datos = {
+        "Nombre de la Central":   df_excel.iloc[14:26, 2].astype(str),  # C15:C26 es columna index 2
+        "Tipo de Generador":       df_excel.iloc[14:26, 4].astype(str),  # E15:E26 index 4
+        "Numero de Generador":     df_excel.iloc[14:26, 5].astype(str),  # F15:F26 index 5
+        "HP (MWh)":                pd.to_numeric(df_excel.iloc[14:26, 9], errors='coerce'),  # J15:J26 idx9
+        "HFP (MWh)":               pd.to_numeric(df_excel.iloc[14:26, 10], errors='coerce'), # K15:K26 idx10
+        "Total (MWh)":             pd.to_numeric(df_excel.iloc[14:26, 11], errors='coerce'), # L15:L26 idx11
+        "Máxima Demanda (MW)":    pd.to_numeric(df_excel.iloc[14:26, 14], errors='coerce'), # O15:O26 idx14
+    }
 
-    # Leer la primera hoja
-    df_excel = pd.read_excel(archivo_excel, sheet_name=hoja_usada, header=None)
+    df = pd.DataFrame(datos)
 
-    columnas_necesarias = [2, 4, 5, 9, 10, 11, 14]  # C, E, F, J, K, L, O
+    st.subheader("📊 DataFrame generado")
+    st.dataframe(df)
 
-    if max(columnas_necesarias) >= df_excel.shape[1]:
-        st.error(f"❌ La hoja seleccionada tiene solo {df_excel.shape[1]} columnas. Se necesitan al menos {max(columnas_necesarias)+1} columnas (hasta la O).")
-    elif df_excel.shape[0] < 26:
-        st.error(f"❌ La hoja seleccionada tiene solo {df_excel.shape[0]} filas. Se necesitan al menos 26 filas.")
-    else:
-        # Extraer datos
-        nombre_central = df_excel.iloc[14:26, 2].reset_index(drop=True)
-        tipo_generador = df_excel.iloc[14:26, 4].reset_index(drop=True)
-        numero_generador = df_excel.iloc[14:26, 5].reset_index(drop=True)
-        hp_mwh = df_excel.iloc[14:26, 9].reset_index(drop=True)
-        hfp_mwh = df_excel.iloc[14:26, 10].reset_index(drop=True)
-        total_mwh = df_excel.iloc[14:26, 11].reset_index(drop=True)
-        maxima_demanda = df_excel.iloc[14:26, 14].reset_index(drop=True)
+    # Opción: exportar como Excel o CSV
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button("Descargar CSV", data=csv, file_name="G1_extraido.csv", mime="text/csv")
 
-        df_resultado = pd.DataFrame({
-            "Nombre de la Central": nombre_central,
-            "Tipo de Generador": tipo_generador,
-            "Numero de Generador": numero_generador,
-            "HP (MWh)": hp_mwh,
-            "HFP (MWh)": hfp_mwh,
-            "Total (MWh)": total_mwh,
-            "Máxima Demanda (MW)": maxima_demanda
-        })
-
-        st.success("✅ Datos extraídos correctamente")
-        st.dataframe(df_resultado)
-
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df_resultado.to_excel(writer, index=False, sheet_name='Datos G1')
-        output.seek(0)
-
-        st.download_button(
-            label="📥 Descargar Excel de Resultados",
-            data=output,
-            file_name="Extraccion_G1.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+if __name__ == "__main__":
+    main()
